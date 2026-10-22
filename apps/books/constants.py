@@ -15,3 +15,6 @@ CONTENT_TYPE_BY_FORMAT = {
     "epub": "application/epub+zip",
     "txt": "text/plain; charset=utf-8",
 }
+
+COVER_MAX_WIDTH = 480
+COVER_JPEG_QUALITY = 82

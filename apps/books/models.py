@@ -10,6 +10,11 @@ def book_upload_to(instance, filename):
     return f"books/{instance.owner_id}/{instance.uuid}/original{ext}"
 
 
+def cover_upload_to(instance, filename):
+    ext = Path(filename).suffix.lower() or ".jpg"
+    return f"books/{instance.owner_id}/{instance.uuid}/cover{ext}"
+
+
 # -----------------------------------------------------------------------------
 # Book
 # -----------------------------------------------------------------------------
@@ -38,6 +43,7 @@ class Book(OwnedModel):
     author = models.CharField(max_length=255, blank=True)
     format = models.CharField(max_length=8, choices=FORMAT_CHOICES)
     file = models.FileField(upload_to=book_upload_to)
+    cover = models.ImageField(upload_to=cover_upload_to, blank=True)
     page_count = models.PositiveIntegerField(default=1)
     current_page = models.PositiveIntegerField(default=0)
     status = models.CharField(

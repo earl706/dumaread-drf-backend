@@ -7,7 +7,7 @@ from django.utils import timezone
 from .models import Book, ReadingDay
 
 
-def _days_param(raw, default=365, maximum=366):
+def _days_param(raw, default=365, maximum=500):
     try:
         days = int(raw)
     except (TypeError, ValueError):

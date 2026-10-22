@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from apps.common.viewsets import OwnedModelViewSet
 
 from .constants import CONTENT_TYPE_BY_FORMAT
-from .ingest import IngestError, extract_text_from_bytes, read_file_bytes
+from .ingest import IngestError, ensure_cover, extract_text_from_bytes, read_file_bytes
 from .models import Book
 from .serializers import BookSerializer, HeartbeatSerializer
 from .services import _days_param, apply_heartbeat, reading_activity_timeline
@@ -23,7 +23,11 @@ class BookViewSet(OwnedModelViewSet):
     serializer_class = BookSerializer
     queryset = Book.objects.all()
     parser_classes = [MultiPartParser, FormParser, JSONParser]
-    filterset_fields = ["status", "format"]
+    filterset_fields = {
+        "status": ["exact"],
+        "format": ["exact"],
+        "last_read_at": ["isnull"],
+    }
     search_fields = ["title", "author"]
     ordering_fields = [
         "created_at",
@@ -63,14 +67,14 @@ class BookViewSet(OwnedModelViewSet):
 
     @extend_schema(
         parameters=[
-            OpenApiParameter("days", int, description="Lookback window (1–366)")
+            OpenApiParameter("days", int, description="Lookback window (1–500)")
         ],
         responses={200: dict},
     )
     @action(detail=False, methods=["get"], url_path="activity")
     def activity(self, request):
         """Contribution-style timeline of minutes read per day."""
-        days = _days_param(request.query_params.get("days"), default=365, maximum=366)
+        days = _days_param(request.query_params.get("days"), default=365, maximum=500)
         return Response(
             {
                 "days": days,
@@ -106,6 +110,18 @@ class BookViewSet(OwnedModelViewSet):
             content_type=content_type,
         )
 
+    @action(detail=True, methods=["get"], url_path="cover")
+    def cover_image(self, request, pk=None):
+        book = self.get_object()
+        if not ensure_cover(book):
+            raise Http404("No cover available.")
+        return FileResponse(
+            book.cover.open("rb"),
+            as_attachment=False,
+            filename=f"{_download_stem(book)}-cover.jpg",
+            content_type="image/jpeg",
+        )
+
     @action(detail=True, methods=["get"], url_path="text")
     def extracted_text(self, request, pk=None):
         book = self.get_object()
@@ -127,6 +143,9 @@ class BookViewSet(OwnedModelViewSet):
         return Response({"text": text, "page_count": book.page_count})
 
 
+def _download_stem(book):
+    return (book.title or "book").replace("/", "-")
+
+
 def _download_name(book):
-    title = (book.title or "book").replace("/", "-")
-    return f"{title}.{book.format}"
+    return f"{_download_stem(book)}.{book.format}"
