@@ -184,10 +184,10 @@ USE_TZ = True
 # Static & media files
 # -----------------------------------------------------------------------------
 STATIC_URL = "/static/"
-STATIC_ROOT = BASE_DIR / "staticfiles"
+STATIC_ROOT = BASE_DIR.parent / "staticfiles"
 
 MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_ROOT = BASE_DIR.parent / "media"
 
 # Book uploads are capped at 50 MB (see apps.books.constants.MAX_BOOK_BYTES).
 DATA_UPLOAD_MAX_MEMORY_SIZE = 52 * 1024 * 1024
