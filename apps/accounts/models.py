@@ -47,6 +47,9 @@ class User(AbstractUser):
     full_name = models.CharField(max_length=255, blank=True)
     avatar_url = models.URLField(blank=True)
     timezone = models.CharField(max_length=64, default="UTC")
+    goal_daily_minutes = models.PositiveIntegerField(null=True, blank=True)
+    goal_weekly_minutes = models.PositiveIntegerField(null=True, blank=True)
+    goal_monthly_minutes = models.PositiveIntegerField(null=True, blank=True)
     google_id = models.CharField(max_length=64, blank=True, null=True, unique=True)
     github_id = models.CharField(max_length=64, blank=True, null=True, unique=True)
 

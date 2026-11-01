@@ -51,6 +51,10 @@ class Book(OwnedModel):
     )
     total_reading_seconds = models.PositiveIntegerField(default=0)
     last_read_at = models.DateTimeField(null=True, blank=True)
+    bookmark_page = models.PositiveIntegerField(null=True, blank=True)
+    goal_daily_minutes = models.PositiveIntegerField(null=True, blank=True)
+    goal_weekly_minutes = models.PositiveIntegerField(null=True, blank=True)
+    goal_monthly_minutes = models.PositiveIntegerField(null=True, blank=True)
 
     class Meta(OwnedModel.Meta):
         indexes = [
@@ -92,3 +96,26 @@ class ReadingDay(OwnedModel):
 
     def __str__(self):
         return f"{self.owner_id} {self.date} ({self.seconds}s)"
+
+
+# -----------------------------------------------------------------------------
+# Per-book daily reading-time aggregate (book goal rings)
+# -----------------------------------------------------------------------------
+class BookReadingDay(OwnedModel):
+    book = models.ForeignKey(
+        Book, on_delete=models.CASCADE, related_name="reading_days"
+    )
+    date = models.DateField()
+    seconds = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["-date"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["book", "date"],
+                name="uniq_book_reading_day_book_date",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.book_id} {self.date} ({self.seconds}s)"

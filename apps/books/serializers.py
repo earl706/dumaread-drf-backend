@@ -11,6 +11,7 @@ from .ingest import (
     read_upload_bytes,
 )
 from .models import Book
+from .services import book_goal_progress
 
 
 # -----------------------------------------------------------------------------
@@ -22,6 +23,7 @@ class BookSerializer(serializers.ModelSerializer):
     pages_left = serializers.IntegerField(read_only=True)
     progress_percent = serializers.FloatField(read_only=True)
     has_cover = serializers.SerializerMethodField()
+    goal_progress = serializers.SerializerMethodField()
 
     class Meta:
         model = Book
@@ -34,11 +36,16 @@ class BookSerializer(serializers.ModelSerializer):
             "status",
             "page_count",
             "current_page",
+            "bookmark_page",
             "pages_left",
             "progress_percent",
             "total_reading_seconds",
             "last_read_at",
             "has_cover",
+            "goal_daily_minutes",
+            "goal_weekly_minutes",
+            "goal_monthly_minutes",
+            "goal_progress",
             "file",
             "created_at",
             "updated_at",
@@ -49,17 +56,39 @@ class BookSerializer(serializers.ModelSerializer):
             "format",
             "page_count",
             "current_page",
+            "bookmark_page",
             "pages_left",
             "progress_percent",
             "total_reading_seconds",
             "last_read_at",
             "has_cover",
+            "goal_progress",
             "created_at",
             "updated_at",
         ]
 
     def get_has_cover(self, obj):
         return bool(obj.cover)
+
+    def get_goal_progress(self, obj):
+        return book_goal_progress(obj)
+
+    def validate_goal_daily_minutes(self, value):
+        return self._validate_goal_minutes(value)
+
+    def validate_goal_weekly_minutes(self, value):
+        return self._validate_goal_minutes(value)
+
+    def validate_goal_monthly_minutes(self, value):
+        return self._validate_goal_minutes(value)
+
+    @staticmethod
+    def _validate_goal_minutes(value):
+        if value is None:
+            return None
+        if int(value) < 1:
+            raise serializers.ValidationError("Must be at least 1 minute, or empty.")
+        return int(value)
 
     def validate_file(self, value):
         name = getattr(value, "name", "") or ""
@@ -123,3 +152,7 @@ class BookSerializer(serializers.ModelSerializer):
 class HeartbeatSerializer(serializers.Serializer):
     current_page = serializers.IntegerField(min_value=1)
     seconds = serializers.IntegerField(min_value=0, max_value=MAX_HEARTBEAT_SECONDS)
+
+
+class BookmarkSerializer(serializers.Serializer):
+    page = serializers.IntegerField(min_value=1)

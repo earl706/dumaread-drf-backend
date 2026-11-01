@@ -12,8 +12,13 @@ from apps.common.viewsets import OwnedModelViewSet
 from .constants import CONTENT_TYPE_BY_FORMAT
 from .ingest import IngestError, ensure_cover, extract_text_from_bytes, read_file_bytes
 from .models import Book
-from .serializers import BookSerializer, HeartbeatSerializer
-from .services import _days_param, apply_heartbeat, reading_activity_timeline
+from .serializers import BookmarkSerializer, BookSerializer, HeartbeatSerializer
+from .services import (
+    _days_param,
+    apply_heartbeat,
+    reading_activity_timeline,
+    user_goal_progress,
+)
 
 
 # -----------------------------------------------------------------------------
@@ -21,7 +26,7 @@ from .services import _days_param, apply_heartbeat, reading_activity_timeline
 # -----------------------------------------------------------------------------
 class BookViewSet(OwnedModelViewSet):
     serializer_class = BookSerializer
-    queryset = Book.objects.all()
+    queryset = Book.objects.select_related("owner").all()
     parser_classes = [MultiPartParser, FormParser, JSONParser]
     filterset_fields = {
         "status": ["exact"],
@@ -62,6 +67,7 @@ class BookViewSet(OwnedModelViewSet):
                 "unread": agg["unread"] or 0,
                 "pages_left": agg["pages_left"] or 0,
                 "total_reading_seconds": agg["total_reading_seconds"] or 0,
+                "goal_progress": user_goal_progress(request.user),
             }
         )
 
@@ -94,6 +100,28 @@ class BookViewSet(OwnedModelViewSet):
             serializer.validated_data["seconds"],
         )
         return Response(BookSerializer(updated).data)
+
+    @extend_schema(request=BookmarkSerializer, responses={200: BookSerializer})
+    @action(detail=True, methods=["post", "delete"], url_path="bookmark")
+    def bookmark(self, request, pk=None):
+        book = self.get_object()
+        if request.method == "DELETE":
+            book.bookmark_page = None
+            book.save(update_fields=["bookmark_page", "updated_at"])
+            return Response(BookSerializer(book).data)
+
+        serializer = BookmarkSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        page = serializer.validated_data["page"]
+        max_page = max(1, int(book.page_count or 1))
+        if page > max_page:
+            return Response(
+                {"page": f"Must be between 1 and {max_page}."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        book.bookmark_page = page
+        book.save(update_fields=["bookmark_page", "updated_at"])
+        return Response(BookSerializer(book).data)
 
     @action(detail=True, methods=["get"], url_path="file")
     def download_file(self, request, pk=None):

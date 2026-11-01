@@ -29,6 +29,9 @@ class UserSerializer(serializers.ModelSerializer):
             "full_name",
             "avatar_url",
             "timezone",
+            "goal_daily_minutes",
+            "goal_weekly_minutes",
+            "goal_monthly_minutes",
             "mfa_enabled",
             "show_mfa_prompt",
             "email_verified",
@@ -53,6 +56,23 @@ class UserSerializer(serializers.ModelSerializer):
         from .email_verification import email_verified
 
         return email_verified(obj)
+
+    def validate_goal_daily_minutes(self, value):
+        return self._validate_goal_minutes(value)
+
+    def validate_goal_weekly_minutes(self, value):
+        return self._validate_goal_minutes(value)
+
+    def validate_goal_monthly_minutes(self, value):
+        return self._validate_goal_minutes(value)
+
+    @staticmethod
+    def _validate_goal_minutes(value):
+        if value is None:
+            return None
+        if int(value) < 1:
+            raise serializers.ValidationError("Must be at least 1 minute, or empty.")
+        return int(value)
 
 
 # -----------------------------------------------------------------------------
