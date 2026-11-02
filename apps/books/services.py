@@ -50,22 +50,38 @@ def period_bounds(user, when=None):
     return today, week_start, week_end, month_start, month_end
 
 
-def _minutes_from_seconds(seconds):
-    seconds = int(seconds or 0)
-    if seconds <= 0:
-        return 0
-    return (seconds + 59) // 60
-
-
 def _period_entry(goal_minutes, seconds):
-    minutes = _minutes_from_seconds(seconds)
+    """
+    Build a goal-progress entry from raw seconds.
+
+    ``minutes`` is one-decimal wall time (not ceil) so rings match a countdown
+    timer; ``seconds`` is exact for Xm Ys labels on the client.
+    """
+    secs = max(0, int(seconds or 0))
+    minutes = round(secs / 60, 1) if secs else 0
     if goal_minutes is None:
-        return {"goal_minutes": None, "minutes": minutes, "percent": None}
+        return {
+            "goal_minutes": None,
+            "minutes": minutes,
+            "seconds": secs,
+            "percent": None,
+        }
     goal = max(0, int(goal_minutes))
     if goal <= 0:
-        return {"goal_minutes": goal, "minutes": minutes, "percent": 100.0}
-    percent = round(min(100.0, 100.0 * minutes / goal), 1)
-    return {"goal_minutes": goal, "minutes": minutes, "percent": percent}
+        return {
+            "goal_minutes": goal,
+            "minutes": minutes,
+            "seconds": secs,
+            "percent": 100.0,
+        }
+    goal_secs = goal * 60
+    percent = round(min(100.0, 100.0 * secs / goal_secs), 1)
+    return {
+        "goal_minutes": goal,
+        "minutes": minutes,
+        "seconds": secs,
+        "percent": percent,
+    }
 
 
 def _sum_seconds(qs, start, end):
