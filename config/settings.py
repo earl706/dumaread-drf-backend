@@ -216,6 +216,11 @@ _TAURI_WEBVIEW_ORIGINS = (
     "http://tauri.localhost",
     "tauri://localhost",
 )
+# Phone/tablet Vite on LAN (http://192.168.x.x:5173) when not using the /api proxy.
+_LAN_VITE_ORIGIN_RE = (
+    r"^http://(192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|"
+    r"172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}):5173$"
+)
 if DEBUG:
     extra = [
         origin
@@ -227,6 +232,10 @@ if DEBUG:
     for origin in ("https://tauri.localhost", "http://tauri.localhost"):
         if origin not in CSRF_TRUSTED_ORIGINS:
             CSRF_TRUSTED_ORIGINS = list(CSRF_TRUSTED_ORIGINS) + [origin]
+    if _LAN_VITE_ORIGIN_RE not in CORS_ALLOWED_ORIGIN_REGEXES:
+        CORS_ALLOWED_ORIGIN_REGEXES = list(CORS_ALLOWED_ORIGIN_REGEXES) + [
+            _LAN_VITE_ORIGIN_RE
+        ]
 
 FRONTEND_URL = env("FRONTEND_URL", "http://localhost:5173")
 

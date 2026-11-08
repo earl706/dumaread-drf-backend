@@ -99,7 +99,9 @@ class BookViewSet(OwnedModelViewSet):
             serializer.validated_data["current_page"],
             serializer.validated_data["seconds"],
         )
-        return Response(BookSerializer(updated).data)
+        payload = BookSerializer(updated).data
+        payload["user_goal_progress"] = user_goal_progress(request.user)
+        return Response(payload)
 
     @extend_schema(request=BookmarkSerializer, responses={200: BookSerializer})
     @action(detail=True, methods=["post", "delete"], url_path="bookmark")
