@@ -1,5 +1,5 @@
 """
-Django settings for the DumaRead platform.
+Django settings for the Dumas platform.
 """
 
 import os
@@ -189,8 +189,8 @@ STATIC_ROOT = BASE_DIR.parent / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR.parent / "media"
 
-# Book uploads are capped at 50 MB (see apps.books.constants.MAX_BOOK_BYTES).
-DATA_UPLOAD_MAX_MEMORY_SIZE = 52 * 1024 * 1024
+# Book uploads are capped at 100 MB (see apps.books.constants.MAX_BOOK_BYTES).
+DATA_UPLOAD_MAX_MEMORY_SIZE = 102 * 1024 * 1024
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
@@ -261,7 +261,7 @@ ACCOUNT_RATE_LIMITS = {
 # -----------------------------------------------------------------------------
 # Email (Resend via Anymail; console fallback when no API key)
 # -----------------------------------------------------------------------------
-DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", "DumaRead <onboarding@resend.dev>")
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", "Dumas <onboarding@resend.dev>")
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 RESEND_API_KEY = env("RESEND_API_KEY", "")
 
@@ -325,8 +325,8 @@ SIMPLE_JWT = {
 # OpenAPI (drf-spectacular)
 # -----------------------------------------------------------------------------
 SPECTACULAR_SETTINGS = {
-    "TITLE": "DumaRead API",
-    "DESCRIPTION": "DumaRead — upload, read, and track books.",
+    "TITLE": "Dumas API",
+    "DESCRIPTION": "Dumas — upload, read, and track books.",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
     "COMPONENT_SPLIT_REQUEST": True,

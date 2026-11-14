@@ -9,7 +9,7 @@ class AccountAdapter(DefaultAccountAdapter):
         return f"{settings.FRONTEND_URL}/verify-email?key={emailconfirmation.key}"
 
     def send_mail(self, template_prefix, email, context):
-        context.setdefault("site_name", "DumaRead")
+        context.setdefault("site_name", "Dumas")
         return super().send_mail(template_prefix, email, context)
 
     def add_message(

@@ -42,7 +42,7 @@ def generate_totp_secret() -> str:
 
 
 def provisioning_uri(email: str, secret: str) -> str:
-    return pyotp.TOTP(secret).provisioning_uri(name=email, issuer_name="DumaRead")
+    return pyotp.TOTP(secret).provisioning_uri(name=email, issuer_name="Dumas")
 
 
 def verify_totp(secret: str, code: str) -> bool:

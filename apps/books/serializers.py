@@ -99,7 +99,7 @@ class BookSerializer(serializers.ModelSerializer):
             )
         size = getattr(value, "size", None)
         if size is not None and size > MAX_BOOK_BYTES:
-            raise serializers.ValidationError("File must be 50 MB or smaller.")
+            raise serializers.ValidationError("File must be 100 MB or smaller.")
         if size == 0:
             raise serializers.ValidationError("File is empty.")
         return value
